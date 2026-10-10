@@ -1,0 +1,9 @@
+# Runtime directory snapshots
+directory-info.last
+directory-info.new
+
+# Runtime directories
+monitored_dir/
+malicious_dir/
+test_monitored/
+test_quarantine/
