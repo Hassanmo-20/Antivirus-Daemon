@@ -23,8 +23,7 @@ This project implements **Lab 2: Writing a Shell Script for a Simple Antivirus D
 - [Bonus 2: Whitelist (False Positive Persistence)](#bonus-2-whitelist-false-positive-persistence)
   - [How Files Are Added](#how-files-are-added)
   - [How the Daemon Checks the Whitelist](#how-the-daemon-checks-the-whitelist)
-  - [Persistence Across Runs](#persistence-across-runs)
-- [Automated Testing](#automated-testing)
+- [Manual Testing Guide](#manual-testing-guide)
 
 ---
 
@@ -48,7 +47,6 @@ Antivirus-Daemon/
 ├── restore.sh          # Interactive quarantine restore & whitelist tool (Part 2, Bonus 2)
 ├── antivirus-cron.sh   # Cron-compatible single-pass monitor worker (Bonus 1, Bonus 2)
 ├── Makefile            # Build & execution automation with pre-build target (Part 3)
-├── test_antivirus.sh   # Comprehensive automated test suite (20 automated assertions)
 ├── README.md           # Documentation & step-by-step manual (Part 4)
 ├── monitored_dir/      # Target directory monitored by the daemon (files only)
 ├── malicious_dir/      # Destination directory where quarantined files are moved
@@ -80,7 +78,7 @@ sudo systemctl start cron
 cd /path/to/Antivirus-Daemon
 
 # 5. Grant executable permissions to all shell scripts
-chmod +x antivirusd.sh restore.sh antivirus-cron.sh test_antivirus.sh
+chmod +x antivirusd.sh restore.sh antivirus-cron.sh
 ```
 
 ---
@@ -385,21 +383,30 @@ is_whitelisted() {
 
 ---
 
-## Automated Testing
+## Manual Testing Guide
 
-A full automated test suite `test_antivirus.sh` is provided to validate all requirements, edge cases, and bonuses.
+To test the antivirus system manually:
 
-### Running the Tests
+1. **Start the daemon**:
+   ```bash
+   make
+   ```
+2. **In another terminal, create test files in `monitored_dir`**:
+   ```bash
+   # Test safe file (remains untouched)
+   echo "This is safe content" > monitored_dir/doc.txt
 
-```bash
-./test_antivirus.sh
-```
+   # Test flagged extension (automatically quarantined and deleted)
+   echo "batch script" > monitored_dir/bad.bat
 
-### What Is Tested
-
-- **Test 1**: CLI parameter and argument validation.
-- **Test 2**: First-run behavior and detection across all 5 flagged extensions (`.exe`, `.bat`, `.vbs`, `.scr`, `.ps1`).
-- **Test 3**: Content keyword scanning across case variations (`VIRUS`, `Trojan`, etc.) and real-time polling change detection.
-- **Test 4**: `restore.sh` empty quarantine handling and interactive menus.
-- **Test 5**: Whitelist persistence across daemon restarts (verifying restored false positives remain untouched).
-- **Test 6**: `antivirus-cron.sh` single-pass detection, quarantine, and change tracking.
+   # Test flagged keyword (automatically quarantined and deleted)
+   echo "This contains a Trojan payload" > monitored_dir/malicious.txt
+   ```
+3. **Review and restore files**:
+   ```bash
+   make restore
+   ```
+   Select a file and choose:
+   - `1` to restore the file and verify it is whitelisted.
+   - `2` to permanently delete the file.
+   - `3` to keep it quarantined.
